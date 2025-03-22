@@ -1,11 +1,104 @@
-const filmContainer = document.querySelector(".film-container");
+const flexContainer = document.querySelector(".flex-container");
+
 const inputEl = document.querySelector("#title");
 const typeEl = document.querySelector("#type");
 const searchBtn = document.querySelector(".search-btn");
 
-const allFilmInfoContainer = document.querySelector(".all-film-info-container");
+const filmDetailContainer = document.querySelector(".film-detail-container");
 
 const paginationEl = document.querySelector(".pagination");
+
+function renderThumbnail(data, type) {
+  let filmsArr = [];
+  let row = []; // Temporary array to store 3 items
+
+  for (let i = 0; i < data.results.length; i++) {
+    let imgPathPoster = `https://image.tmdb.org/t/p/w500//${data.results[i].poster_path}`;
+    if (data.results[i].poster_path == null) {
+      imgPathPoster = "loading-failed.png";
+    }
+
+    let imgPathBackDrop = `https://image.tmdb.org/t/p/w500//${data.results[i].backdrop_path}`;
+    if (data.results[i].backdrop_path == null) {
+      imgPathBackDrop = imgPathPoster;
+    }
+
+    let releasedYear;
+    if (type == "movie") {
+      releasedYear = data.results[i].release_date
+        ? data.results[i].release_date.split("-")[0]
+        : "unknown";
+    } else if (type == "tv") {
+      releasedYear = data.results[i].first_air_date
+        ? data.results[i].first_air_date.split("-")[0]
+        : "unknown";
+    }
+
+    row.push(`
+      <div class="container">
+        <div class="film-thumbnail">
+          <div class="image-container">
+            <img
+              src="${imgPathPoster}"
+              alt="image"
+            />
+            <p class="year">${releasedYear}</p>
+          </div>
+          <div class="thumbnail-title">${
+            type == "movie" ? data.results[i].title : data.results[i].name
+          }</div>
+        </div>
+
+        <div class="film-info-container">
+          <div class="image-container">
+            <img
+              src="${imgPathBackDrop}"
+              alt="image"
+            />
+          </div>
+
+          <div class="film-info">
+            <p>${
+              type == "movie" ? data.results[i].title : data.results[i].name
+            }</p>
+
+            <div>
+              <p>${type == "movie" ? "Movie" : "TV Series"}</p>
+              <p style="color: gray">‖</p>
+              <p>${releasedYear}</p>
+            </div>
+
+            <div class="description">
+              ${
+                data.results[i].overview == ""
+                  ? "no description"
+                  : data.results[i].overview.slice(0, 70) + "..."
+              }
+            </div>
+
+            <button id="${
+              data.results[i].id
+            }" class="detail-btn">Detail</button>
+          </div>
+        </div>
+      </div>
+    `);
+
+    // If row has 3 items, push to filmsArr and reset
+    if (row.length === 3) {
+      filmsArr.push(row);
+      row = []; // Reset row for the next set of 3
+    }
+  }
+
+  // Push any remaining items (less than 3)
+  if (row.length > 0) {
+    filmsArr.push(row);
+  }
+
+  console.log(filmsArr);
+  return filmsArr;
+}
 
 function renderDetail(id, type) {
   Promise.all([
@@ -43,6 +136,13 @@ function renderDetail(id, type) {
         return c.job === "Director";
       });
 
+      let directorName;
+      if (director == null) {
+        directorName = "unknown";
+      } else {
+        directorName = director.name;
+      }
+
       let writers = creditData.crew.filter((c) => {
         return (
           c.job === "Producer" || c.job === "Screenplay" || c.job === "Writer"
@@ -50,19 +150,24 @@ function renderDetail(id, type) {
       });
 
       let writerNames = writers.map(
-        (writer) => `${writer.name} (${writer.job})`
+        (writer) => `${writer.name} (${writer.job}), `
       );
 
       let actors = creditData.cast.filter((c) => {
         return c.order < 5;
       });
 
-      let actorNames = actors.map((actor) => actor.name);
+      let actorNames = actors.map((actor) => `${actor.name}, `);
 
       // detail
-      let imgPath3 = `https://image.tmdb.org/t/p/w500//${detailData.poster_path}`;
+      let imgPathPoster = `https://image.tmdb.org/t/p/w500//${detailData.poster_path}`;
       if (detailData.poster_path == null) {
-        imgPath3 = "default.jpg";
+        imgPathPoster = "loading-failed.png";
+      }
+
+      let imgPathBackDrop = `https://image.tmdb.org/t/p/w500//${detailData.backdrop_path}`;
+      if (detailData.backdrop_path == null) {
+        imgPathBackDrop = imgPathPoster;
       }
 
       let genreArr = detailData.genres.map((genre) => genre.name);
@@ -110,141 +215,118 @@ function renderDetail(id, type) {
       }
 
       // render
-      allFilmInfoContainer.innerHTML = `
-      <div id="detail" class="film-info-container">
-        <div class="detail-image-contianer">
-          <img
-            src=${imgPath3}
-            alt="image"
-          />
+      filmDetailContainer.innerHTML = `
+      <div class="detail-container">
+        <div class="image-container">
+          <img class="back-drop" src=${imgPathBackDrop} alt="image">
+          <img class="poster" src=${imgPathPoster} alt="image">
         </div>
-  
-        <div class="info">
-          <div class="title-info">
-            <p>Title</p>
-            <p>: ${type == "movie" ? detailData.title : detailData.name}</p>
-          </div>
-  
-          <div class="released-info">
-            <p>Released</p>
-            <p>: ${fullDate}</p>
+
+        <div class="details">
+          <p class="detail-title">${
+            type == "movie" ? detailData.title : detailData.name
+          }</p>
+
+          <div class="date-ep-container">
+            <span style="color: gray">‖</span>  
+            <span>${type == "movie" ? "Movie" : "TV Series"}</span>
+            <span style="color: gray">‖</span>
+            <span>${fullDate}</span>
+            <span style="color: gray">‖</span>
           </div>
 
-          <div class="genre-info">
-            <p>Genre</p>
-            <p>: ${genreArr.length > 0 ? genreArr.join(", ") : "unknown"}</p>
+          <div class="country-genre-container">
           </div>
-  
-          <div class="country-info">
-            <p>Country</p>
-            <p>: ${
-              detailData.origin_country.length > 0
-                ? countryNames.join(", ")
-                : "unknown"
-            }</p>
+
+          <div class="director">
+            <span>Director:</span>
+            <span>${
+              creditData.crew.length > 0 ? directorName : "unknown"
+            }</span>
           </div>
-  
-          <div class="director-info">
-            <p>Director</p>
-            <p>: ${creditData.crew.length > 0 ? director.name : "unknown"}</p>
+
+          <div class="writer">
+            <span>Writer:</span>
           </div>
-  
-          <div class="writer-info">
-            <p>Writer</p>
-            <p>: 
-              ${writerNames.length > 0 ? writerNames.join(", ") : "unknown"}
-            </p>
+
+          <div class="actor">
+            <span>Cast:</span>
           </div>
-  
-          <div class="actor-info">
-            <p>Actors</p>
-            <p>: ${actors.length > 0 ? actorNames.join(", ") : "unknown"}</p>
+
+          <div class="description">
+            <span>Description:</span>
+            <span>${
+              detailData.overview == "" ? "no description" : detailData.overview
+            }</span>
           </div>
-  
-          <div class="award-info">
-            <p>Description</p>
-            <p>: "${
-              detailData.overview == "" ? "No description" : detailData.overview
-            }"</p>
-          </div>
+
         </div>
-      </div>`;
+      </div>
+      `;
 
-      if (type == "tv") {
-        const episodeEl = document.createElement("div");
-        episodeEl.classList.add("episodes-info");
-        episodeEl.innerHTML = `
-          <p>Episodes<p>
-          <p>: ${detailData.number_of_episodes}<p>
-        `;
+      const countryGenreContainer = document.querySelector(
+        ".country-genre-container"
+      );
 
-        document
-          .querySelector(".film-info-container .info")
-          .insertBefore(episodeEl, document.querySelector(".genre-info"));
+      // country
+      if (detailData.origin_country.length > 0) {
+        countryNames.forEach((country) => {
+          const newSpan = document.createElement("span");
+          newSpan.innerHTML = country;
+
+          countryGenreContainer.appendChild(newSpan);
+        });
       }
 
-      document.querySelector(".fourth-section .text").style.display = "block";
+      // genre
+      if (genreArr.length > 0) {
+        genreArr.forEach((genre) => {
+          const newSpan = document.createElement("span");
+          newSpan.innerHTML = genre;
+
+          countryGenreContainer.appendChild(newSpan);
+        });
+      }
+
+      // writer
+      if (writerNames.length > 0) {
+        writerNames.forEach((writer) => {
+          const newSpan = document.createElement("span");
+          newSpan.innerHTML = writer;
+
+          document.querySelector(".writer").appendChild(newSpan);
+        });
+      } else {
+        const newSpan = document.createElement("span");
+        newSpan.innerHTML = "unknown";
+        document.querySelector(".writer").appendChild(newSpan);
+      }
+
+      // actor
+      if (actors.length > 0) {
+        actorNames.forEach((actor) => {
+          const newSpan = document.createElement("span");
+          newSpan.innerHTML = actor;
+
+          document.querySelector(".actor").appendChild(newSpan);
+        });
+      } else {
+        const newSpan = document.createElement("span");
+        newSpan.innerHTML = "unknown";
+        document.querySelector(".actor").appendChild(newSpan);
+      }
+
+      // episode
+      if (type == "tv") {
+        const newP = document.createElement("p");
+        newP.innerHTML = `${detailData.number_of_episodes} Eps`;
+
+        document.querySelector(".date-ep-container").appendChild(newP);
+      }
     })
     .catch((error) => {
       console.log(error);
     });
-}
-
-function renderThumbnail(data, type) {
-  let filmsArr = [];
-  let row = []; // Temporary array to store 3 items
-
-  for (let i = 0; i < data.results.length; i++) {
-    let imgPath = `https://image.tmdb.org/t/p/w500//${data.results[i].poster_path}`;
-    if (data.results[i].poster_path == null) {
-      imgPath = "default.jpg";
-    }
-
-    let releasedYear;
-    if (type == "movie") {
-      releasedYear = data.results[i].release_date
-        ? data.results[i].release_date.split("-")[0]
-        : "unknown";
-    } else if (type == "tv") {
-      releasedYear = data.results[i].first_air_date
-        ? data.results[i].first_air_date.split("-")[0]
-        : "unknown";
-    }
-
-    row.push(`
-      <div class="film-thumbnail">
-        <div class="image-container">
-          <img src="${imgPath}" alt="image" />
-        </div>
-        <div class="detail-container">
-          <p>${type == "movie" ? "Movie" : "TV series"}</p>
-          <p class="title" style="font-weight: bold">${
-            type == "movie" ? data.results[i].title : data.results[i].name
-          }</p>
-          <p class="released-year">${releasedYear}</p>
-          <div class="detail-btn-container">
-            <button id="${data.results[i].id}" class="detail-btn">
-              <a class="link" href="#detail">Details</a>
-            </button>
-          </div>
-        </div>
-      </div>
-    `);
-
-    // If row has 3 items, push to filmsArr and reset
-    if (row.length === 3) {
-      filmsArr.push(row);
-      row = []; // Reset row for the next set of 3
-    }
-  }
-
-  // Push any remaining items (less than 3)
-  if (row.length > 0) {
-    filmsArr.push(row);
-  }
-
-  console.log(filmsArr);
-  return filmsArr;
 }
 
 function detailBtnOnClick(type) {
@@ -252,16 +334,19 @@ function detailBtnOnClick(type) {
     btn.addEventListener("click", () => {
       console.log(btn.id);
       renderDetail(btn.id, type);
+
+      setTimeout(() => {
+        document
+          .getElementById("detail-container")
+          .scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
     });
   });
 }
 
-function paginationOnClick(activePage, filmsArr, films, filmContainer, type) {
+function paginationOnClick(activePage, filmsArr, films, type) {
   document.querySelectorAll(".page-item").forEach((btn) => {
     btn.addEventListener("click", () => {
-      // console.log(btn.id);
-      // console.log(`active: ${activePage}`);
-
       if (btn.id === "next") {
         activePage++;
 
@@ -279,7 +364,7 @@ function paginationOnClick(activePage, filmsArr, films, filmContainer, type) {
       }
 
       films = filmsArr[activePage - 1];
-      filmContainer.innerHTML = films;
+      flexContainer.innerHTML = films.join("");
 
       detailBtnOnClick(type);
     });
@@ -287,10 +372,6 @@ function paginationOnClick(activePage, filmsArr, films, filmContainer, type) {
 }
 
 function searchMovie(title, type) {
-  if (type == "series") {
-    type = "tv";
-  }
-
   fetch(
     `https://api.themoviedb.org/3/search/${type}?api_key=df55b385123085d8a116ec0875e5d913&query=${title}`
   )
@@ -310,22 +391,38 @@ function searchMovie(title, type) {
       const filmsArr = renderThumbnail(data, type);
       let activePage = 1;
 
+      // no result
+      if (filmsArr.length === 0) {
+        flexContainer.innerHTML = "";
+        filmDetailContainer.innerHTML = "";
+        paginationEl.innerHTML = "";
+
+        document.querySelector(".no-result span").innerHTML = title;
+        document.querySelector(".no-result").style.display = "block";
+        return;
+      }
+
+      document.querySelector(".no-result").style.display = "none";
+
       films = filmsArr[activePage - 1];
-      filmContainer.innerHTML = films;
+      flexContainer.innerHTML = films.join("");
 
       // add pagination
-      let paginationButtons = `<li id="previous" class="page-item"><a class="page-link" >Previous</a></li>`;
-      for (let i = 0; i <= Math.floor(resultsLength / 3); i++) {
-        paginationButtons += `<li id="${
-          i + 1
-        }" class="page-item"><a class="page-link" >${i + 1}</a></li>`;
+      if (filmsArr.length > 1) {
+        let paginationButtons = `<li id="previous" class="page-item"><a class="page-link" ><<</a></li>`;
+        for (let i = 0; i < filmsArr.length; i++) {
+          paginationButtons += `<li id="${
+            i + 1
+          }" class="page-item"><a class="page-link" >${i + 1}</a></li>`;
+        }
+        paginationEl.innerHTML = `${paginationButtons}<li id="next" class="page-item"><a class="page-link" >>></a></li>`;
+      } else {
+        paginationEl.innerHTML = "";
       }
-      paginationEl.innerHTML = `${paginationButtons}<li id="next" class="page-item"><a class="page-link" >Next</a></li>`;
 
       // click on pagination
-      paginationOnClick(activePage, filmsArr, films, filmContainer, type);
+      paginationOnClick(activePage, filmsArr, films, type);
 
-      document.querySelector(".second-section .text").style.display = "block";
       document.querySelector("nav").style.display = "block";
 
       detailBtnOnClick(type);
@@ -334,8 +431,6 @@ function searchMovie(title, type) {
       console.log(error);
     });
 }
-
-// searchMovie("hi");
 
 searchBtn.addEventListener("click", () => {
   let type = typeEl.options[typeEl.selectedIndex].value;
