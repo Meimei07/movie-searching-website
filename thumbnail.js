@@ -3,12 +3,12 @@ function renderThumbnail(results, type) {
   let row = []; // Temporary array to store 3 items
 
   for (let i = 0; i < results.length; i++) {
-    let imgPathPoster = `https://image.tmdb.org/t/p/w500//${results[i].poster_path}`;
+    let imgPathPoster = `${IMAGE_API_URL}//${results[i].poster_path}`;
     if (results[i].poster_path == null) {
       imgPathPoster = "loading-failed.png";
     }
 
-    let imgPathBackDrop = `https://image.tmdb.org/t/p/w500//${results[i].backdrop_path}`;
+    let imgPathBackDrop = `${IMAGE_API_URL}//${results[i].backdrop_path}`;
     if (results[i].backdrop_path == null) {
       imgPathBackDrop = imgPathPoster;
     }

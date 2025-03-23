@@ -5,6 +5,10 @@ const searchBtn = document.querySelector(".search-btn");
 const filmDetailContainer = document.querySelector(".film-detail-container");
 const paginationEl = document.querySelector(".pagination");
 
+const API_KEY = "df55b385123085d8a116ec0875e5d913";
+const API_URL = "https://api.themoviedb.org/3";
+const IMAGE_API_URL = "https://image.tmdb.org/t/p/w500";
+
 let queryFilms;
 let activePage = 1;
 let keyword;
@@ -12,7 +16,7 @@ let type;
 
 async function searchMovie(title, type) {
   const response = await fetch(
-    `https://api.themoviedb.org/3/search/${type}?api_key=df55b385123085d8a116ec0875e5d913&query=${title}`
+    `${API_URL}/search/${type}?api_key=${API_KEY}&query=${title}`
   );
 
   const data = await response.json();

@@ -1,32 +1,30 @@
 function renderDetail(id, type) {
   Promise.all([
-    fetch(
-      `https://api.themoviedb.org/3/${type}/${id}/credits?api_key=df55b385123085d8a116ec0875e5d913`
-    ).then((reponse2) => {
-      if (!reponse2.ok) {
-        throw "erro2";
-      }
+    fetch(`${API_URL}/${type}/${id}/credits?api_key=${API_KEY}`).then(
+      (reponse2) => {
+        if (!reponse2.ok) {
+          throw "erro2";
+        }
 
-      return reponse2.json();
-    }),
-    fetch(
-      `https://api.themoviedb.org/3/${type}/${id}?api_key=df55b385123085d8a116ec0875e5d913`
-    ).then((reponse3) => {
+        return reponse2.json();
+      }
+    ),
+    fetch(`${API_URL}/${type}/${id}?api_key=${API_KEY}`).then((reponse3) => {
       if (!reponse3.ok) {
         throw "error3";
       }
 
       return reponse3.json();
     }),
-    fetch(
-      `https://api.themoviedb.org/3/configuration/countries?api_key=df55b385123085d8a116ec0875e5d913`
-    ).then((reponse4) => {
-      if (!reponse4.ok) {
-        throw "error4";
-      }
+    fetch(`${API_URL}/configuration/countries?api_key=${API_KEY}`).then(
+      (reponse4) => {
+        if (!reponse4.ok) {
+          throw "error4";
+        }
 
-      return reponse4.json();
-    }),
+        return reponse4.json();
+      }
+    ),
   ])
     .then(([creditData, detailData, countryData]) => {
       // credit
