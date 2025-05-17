@@ -56,12 +56,12 @@ function renderDetail(id, type) {
       let actorNames = actors.map((actor) => `${actor.name}, `);
 
       // detail
-      let imgPathPoster = `https://image.tmdb.org/t/p/w500//${detailData.poster_path}`;
+      let imgPathPoster = `${IMAGE_API_URL}//${detailData.poster_path}`;
       if (detailData.poster_path == null) {
         imgPathPoster = "loading-failed.png";
       }
 
-      let imgPathBackDrop = `https://image.tmdb.org/t/p/w500//${detailData.backdrop_path}`;
+      let imgPathBackDrop = `${IMAGE_API_URL}//${detailData.backdrop_path}`;
       if (detailData.backdrop_path == null) {
         imgPathBackDrop = imgPathPoster;
       }

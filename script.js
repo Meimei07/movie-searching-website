@@ -49,7 +49,7 @@ async function searchMovie(title, type) {
 
   document.querySelector("nav").style.display = "block";
 
-  detailBtnOnClick(type);
+  // detailBtnOnClick(type);
 }
 
 searchBtn.addEventListener("click", () => {

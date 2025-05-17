@@ -64,7 +64,9 @@ function renderThumbnail(results, type) {
               }
             </div>
 
-            <button id="${results[i].id}" class="detail-btn">Detail</button>
+            <button id="${
+              results[i].id
+            }" onclick="handleDetailBtnClick(event)" class="detail-btn">Detail</button>
           </div>
         </div>
       </div>
@@ -99,4 +101,10 @@ function detailBtnOnClick(type) {
       }, 100);
     });
   });
+}
+
+function handleDetailBtnClick(e) {
+  let id = e.target.id;
+  renderDetail(id, type);
+  console.log(e);
 }
