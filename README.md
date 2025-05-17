@@ -25,6 +25,16 @@ A web application that allows user to search for movies and TV series using the 
   - Number of episodes (for TV series)
 
   - Description
+ 
+## Technologies used
+
+- HTML5
+
+- CSS3
+
+- Vanilla Javascript
+
+- TMDB API
 
 ## Website link
 
